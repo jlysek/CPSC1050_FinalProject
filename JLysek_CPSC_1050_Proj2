@@ -1,0 +1,415 @@
+""""
+Author: Jarrett Lysek
+Class: CPSC 1050
+Date 4/18/2024
+
+Game Title: Falling Roulette at the Lysek Casino
+Map: Lysek Casino
+Outputs: All time Leaderboard
+
+
+Hello and Welcome to my RPG game! The game will take place in a navigable casino. The that we will play is called Fallining Roulette. There are two players in this game.
+First the bettor, who will be making the decisions during the game and will have the option to continue playing or to take their winnings
+each round. The Second player is the dealer who will win if the bettor busts. The game is structured as a minimum of a $100 buy in and a maximum of $1000,
+from there the bettor picks can chose to bet a number: even or odd or can bet a color: red or black. A roulette wheel is then spun and
+if their bet wins they are paid out 1.5x and that number is taken off the board. This is where the falling part aka persistent states occurs. The number it landed
+on will now be taken off the board and the bettor will then have the option to either take their winnings or play again with the wheel now only having 35 numbers.
+If they decide to play again they can bet again which now the board won't have a 50/50 probablity. The bets keep rolling over so you win you can't change your
+bet size it is just your inital bet + the profit from the last round. So if they bet $100 the first round and won, now they have $150. If they decide to play again
+and win they will have 1.5*150 $225 and this loop continue till the player losses or decides to walk away. The goal of the gameis to make the most money and be first on the
+all-time leaderboard which will be an ouput log.
+"""
+
+#Imports Section
+import os
+import time
+import random
+
+
+# Greeting the user and explaining how the game works
+print("\nHello and Welcome to my RPG game! The game will take place in a navigable casino. The that we will play called Fallining Roulette. There are two players in this game."
+      "\nFirst the bettor, who will be making the decisions during the game and will have the option to continue playing or to take their winnings"
+      "\neach round. The Second player is the dealer who will win if the bettor busts. The game is structured as a minimum of a $100 buy in and a maximum of $1000,"
+      "\nfrom there the bettor picks can chose to bet a number: even or odd or can bet a color: red or black. A roulette wheel is then spun and"
+      "\nif their bet wins they are paid out 1.5x and that number is taken off the board. This is where the falling part aka persistent states occurs. The number it landed"
+      "\non will now be taken off the board and the bettor will then have the option to either take their winnings or play again with the wheel now only having 35 numbers."
+      "\nIf they decide to play again they can bet again which now the board won't have a 50/50 probablity. The bets keep rolling over so you win you can't change your"
+      "\nbet size it is just your inital bet + the profit from the last round. So if they bet $100 the first round and won, now they have $150. If they decide to play again"
+      "\nand win they will have 1.5*150 $225 and this loop continue till the player losses or decides to walk away.  The goal is to make the most money and be first on the "
+      "\nall time leaderboard which will be an ouput log.")
+
+#Creating Class of the wheel
+class Wheel:
+    def __init__(self):
+        #Creating list 1 through 36
+        self.nums = list(range(1, 37))
+
+        #Assinging Red to even and black to odd
+        self.colors = ['Red' if x % 2 == 0 else 'Black' for x in self.nums]
+
+        #Creating tuple of all numbers and colors on wheel
+        self.wheel = list(zip(self.nums, self.colors))
+
+    #Spinning the Wheel
+    def spin_wheel(self):
+        #Getting random choice
+        result = random.choice(self.wheel)
+
+        return result
+
+    #Removing previous spin from wheel
+    def remove_from_wheel(self, result):
+        #Removing the result
+        self.wheel.remove(result)
+
+        return result
+
+    #Outputting the spin result
+    def formatting_output(self, result):
+        time.sleep(2)
+        print(f'\nYour Spin Resulted in {result[1]}, {result[0]}')
+
+    #Displaying the numbers left as strings
+    def display_remaining_spots(self):
+        #Getting the numbers left after last spin is removed
+        remaining_numbers = [str(num) for num, color in self.wheel]
+        time.sleep(1)
+
+        print("Remaining numbers on the wheel:", ', '.join(remaining_numbers))
+
+
+class User_bet:
+    def __init__(self):
+        #Assigning the role
+        self.player_role = self.choose_role()
+
+    #Prompting the user for the role they want to play
+    def choose_role(self):
+        #Giving Guide lines of what dealer does and what bettor does
+        print("\nNow it's time to choose whether to be the Bettor or the Dealer!")
+        print("The Bettor gets to select a bet and if they win they get 1.5x their bet. \nThey then have the choice to walk away or play again where their bet + winnings roll over.")
+        print("The Dealer on the other hand, spins the wheel and takes the wager if the bettor loses.")
+
+        #Prompting the user for decision
+        print(f"\nWould you like to be the Bettor (Type 'B') or Dealer (Type 'D')? ")
+        role = input().strip().lower()
+
+        #Checking if valid role is entered
+        while role not in ['b', 'd']:
+            print("Invalid Input. Please chose either Bettor (Type 'B') or Dealer (Type 'D')? ")
+            role = input().strip().lower()
+
+        return role
+
+    #If user decides to be the bettor
+    def bettor_bet(self, bet_size):
+        if self.player_role == 'b':
+
+            #Seeing if they want to bet numbers or colors
+            print('\nThe Wheel has numbers 1 - 36, with Evens being Red and Odds being Black')
+            print('You can chose to bet a even/odd or a color. They both will start out with a 50% probability but will fluctuate \nas the previous spin is removed from the board and you keep playing')
+            print("\nTo Bet on Even/Odd (Type 'N') or Color (Type 'C'): ")
+            bet_type = input().strip().lower()
+
+            #Checking to make sure valid input
+            while bet_type not in ['n', 'c']:
+                print("Invalid Input. Please bet Even/Odd (Type 'N') or Color (Type 'C'):")
+                bet_type = input().strip().lower()
+
+            #If they want to bet numbers
+            if bet_type == 'n':
+                print("\nPlease Choose Even (Type 'E') or Odd (Type 'O') ")
+                bet_choice = input().strip().lower()
+                time.sleep(1)
+                print('\nThe Wheel is now Spinning, Good Luck!')
+
+                #Checking to make sure valid input
+                while bet_choice not in ['e', 'o']:
+                    print("Invalid input. Please Choose Even (Type 'E') or Odd (Type 'O'):")
+                    bet_choice = input().strip().lower()
+                    time.sleep(1)
+                    print('\nThe Wheel is now Spinning, Good Luck!')
+
+            #If user choses to bet colors
+            else:
+                print("\nPlease Chose Red (Type 'R') or Black (Type 'B')")
+                bet_choice = input().strip().lower()
+                time.sleep(1)
+                print('\nThe Wheel is now Spinning, Good Luck!')
+
+                #Making sure valid input
+                while bet_choice not in ['r', 'b']:
+                    print("Invalid input. Please Chose Red (Type 'R') or Black (Type 'B'):")
+                    bet_choice = input().strip().lower()
+                    time.sleep(1)
+                    print('\nThe Wheel is now Spinning, Good Luck!')
+
+            return (bet_choice, bet_size)
+
+#Creating class to log to an output file, this will be inheritted later
+class CasinoLogger:
+    def __init__(self, log_path):
+        self.log_path = log_path
+
+    #Logging perfomace to output log
+    def log_performance(self, player_name, total):
+        try:
+            with open(self.log_path, 'a') as log_file:
+                log_file.write(f"{player_name}: ${total:.2f}\n")
+        except Exception as e:
+            print(f"Error logging performance: {e}")
+
+#Inheritting CasinoLogger
+class Results(CasinoLogger):
+    def __init__(self, wheel, log_path="lysek_casino_performance_log.txt"):
+        super().__init__(log_path)
+        self.wheel = wheel
+        self.total = 0
+
+    #Displaying the leader board at the end of the game
+    def display_leaderboard(self):
+        try:
+            #Opening the file
+            with open(self.log_path, 'r') as log_file:
+                leaders = []
+
+                #Going through each line in the file
+                for line in log_file:
+                    parts = line.strip().split(": ")
+                    if len(parts) < 2:
+                        continue
+                    identifier, amount_str = parts[0], parts[1].replace('$', '').split(" - ")[0]
+                    try:
+                        amount = float(amount_str)
+                        leaders.append((identifier, amount))
+                    except ValueError:
+                        continue
+
+                #Sorting the leaderboard top to bottom
+                leaders.sort(key=lambda x: x[1], reverse=True)
+
+            #Printing the leader board
+            print("\nAll-Time Leaderboard:")
+            for rank, (identifier, amount) in enumerate(leaders, start=1):
+                print(f"{rank}. {identifier} - ${amount:.2f}")
+
+        #Checking for errors
+        except FileNotFoundError:
+            print("\nLeaderboard is currently empty.")
+        except Exception as e:
+            print(f"Error processing leaderboard: {e}")
+
+    #Removing the previous spin from the wheel
+    def update_wheel_and_feedback(self, result):
+        self.wheel.remove_from_wheel(result)
+        self.wheel.display_remaining_spots()
+
+    #Checking to see if winner
+    def check_winner(self, bet, spin):
+        #Seeing if player won and returns boolean
+        win = self.resolve_bet(bet, spin)
+
+        #If player won
+        if win:
+            self.total += bet[1] * 1.5  # Increase total by 1.5 times the bet amount on a win
+            print(f"\nCongratulations, you won this round! Your total is now ${self.total:.2f}")
+            if self.total >= 0:
+                print(
+                    f'\nYour potential payout next round is ${(self.total * 1.5):.2f}, or you could walk away with your current winnings.')
+
+        #If Player lost
+        else:
+            if self.total > 0:
+                #If the player has winnings from previous rounds, reset total to zero upon losing
+                self.total = 0
+            else:
+                self.total -= bet[1]
+                #If already at zero or negative, just update the display without changing the total
+                pass
+            print(f"\nSorry, you lost this round! Your total is now ${self.total:.2f}")
+
+        #Updating the wheel and logging it to the leaderboard
+        self.update_wheel_and_feedback(spin)
+        self.log_performance(name, self.total)
+
+
+    #Checking if players bet equals the spin
+    def resolve_bet(self, bet, spin):
+        win_conditions = {
+            'e': spin[0] % 2 == 0,
+            'o': spin[0] % 2 != 0,
+            'r': spin[1] == 'Red',
+            'b': spin[1] == 'Black'
+        }
+        return win_conditions.get(bet[0], False)
+
+#Inheriting CasinoLogger to log Dealers output
+class Dealer(CasinoLogger):
+    def __init__(self, user_bet, log_path="lysek_casino_performance_log.txt"):
+        super().__init__(log_path)
+        self.user_bet = user_bet
+        self.dealer_total = 0
+
+    #Simulating what a player do for when user is dealer
+    def manage_game(self):
+        while True:
+            #Randomly choses bet size
+            bet_size = random.randint(100, 1001)
+            bet_amount, bet_type = self.take_bets()
+
+            #Spinning the wheel
+            spin_result = self.wheel.spin_wheel()
+            self.wheel.formatting_output(spin_result)
+
+            #Checking if bettor won
+            win = self.check_winner(bet_type, spin_result)
+            self.pay_out(win, bet_amount)
+
+            #If no numbers left
+            if not self.wheel.wheel:
+                print("No more numbers left on the wheel!")
+                break
+
+            #Checking to see if they want to play again
+            decision = input("\nContinue playing? (Y/N): ").strip().lower()
+
+            #Make sure its a valid decision
+            while decision not in ['y', 'n']:
+                print('Invalid input. Please enter "Y" for Yes or "N" for No.')
+                decision = input("\nContinue playing? (Y/N): ").strip().lower()
+
+            #Breaking the loop and outputting ending messages if they don't want to play anymore
+            if decision == 'n':
+                if self.dealer_total > 0:
+                    print(f"\nThank you for playing! Your final total is ${self.dealer_total:.2f}")
+                    print(
+                        '\nPlease proceed to the chip booth to collect your winnings! We hope to see you again soon!')
+                    time.sleep(2)
+                    self.log_performance(name, self.dealer_total)
+                else:
+                    print(f"\nThank you for playing! Your final total is ${self.dealer_total:.2f}")
+                    print('\nBetter Luck Next Time! We hope to see you again soon!')
+                    time.sleep(2)
+                    self.log_performance(name, self.dealer_total)
+                break
+
+    #Creating random simulation of what bettor would chose
+    def take_bets(self):
+        # Randomly choose bet amount between 100 and 1000 for bettor
+        bet_amount = random.randint(100, 1000)
+
+        print(f"\nThe Bettor is betting ${bet_amount}")
+
+        # Randomly choose if bettor picks to bet color or even/odd
+        bet_type = random.choice(['n', 'c'])
+        bet_choice = None
+
+        #If bettor is betting number when player is dealer
+        if bet_type == 'n':
+            #Randomly chosing even or odd
+            bet_choice = random.choice(['e', 'o'])
+            print(f"\nThe Bettor bet on {'Even' if bet_choice == 'e' else 'Odd'}")
+            print('\nPress any key to spin the wheel:')
+            spin_wheel = input()
+            print('\nThe wheel is now spinning!')
+            time.sleep(2)
+
+        # If bettor is betting color when player is dealer
+        elif bet_type == 'c':
+            #Randomly chosing red or black
+            bet_choice = random.choice(['r', 'b'])
+            print(f"\nThe Bettor bet on {'Red' if bet_choice == 'r' else 'Black'}")
+            print('\nPress any key to spin the wheel:')
+            spin_wheel = input()
+            print('\nThe wheel is now spinning!')
+            time.sleep(2)
+        return bet_amount, (bet_choice, bet_type)
+
+    #Cecking to see if they won
+    def check_winner(self, bet, spin):
+        # Mapping bets to winning conditions
+        if bet[1] == 'n':  # Number bet
+            return (spin[0] % 2 == 0 and bet[0] == 'e') or (spin[0] % 2 != 0 and bet[0] == 'o')
+        elif bet[1] == 'c':  # Color bet
+            return (spin[1] == 'Red' and bet[0] == 'r') or (spin[1] == 'Black' and bet[0] == 'b')
+
+    #Paying out the bettor or taking their money
+    def pay_out(self, win, bet_amount):
+        if win:
+            self.dealer_total -= bet_amount * 1.5
+            print(f"\nBettor wins! You pay out ${bet_amount * 1.5:.2f}. Your total is now ${self.dealer_total:.2f}")
+        else:
+            self.dealer_total += bet_amount
+            print(f"\nBettor loses! You collect ${bet_amount:.2f}. Your total is now ${self.dealer_total:.2f}")
+
+#Beggining message welcoming the user
+print("\nThank you for choosing the play at the Lysek Casino, Please provide your name to use as a Player ID. ")
+name = input()
+print(f'\nPerfect {name}, We are glad you are here! Lets Begin!')
+
+#Initializing all the classes and a tracker
+wheel = Wheel()
+user = User_bet()
+results = Results(wheel)
+tracker = 0
+
+#Main loop to go through play
+while True:
+
+    #If user decides to be the dealer
+    if user.player_role == 'd':
+        print("\nThank you for choosing to be the Dealer!")
+        dealer = Dealer(user)
+        dealer.wheel = wheel
+        dealer.manage_game()
+
+        #Breaking out of loop when they are done and going to output log
+        break
+
+    #If user decides to be the bettor
+    elif user.player_role == 'b':
+        if results.total <= 0:
+            #Getting bet
+            print("\nThe minimum bet for this table is $100, the maximum is $1000, Please chose your initial wager size: ")
+            bet_size = float(input())
+
+            #Making sure bet is valid
+            while bet_size < 100 or bet_size > 1000:
+                print('Invalid input. Please enter a number between 100 and 1000.')
+                bet_size = float(input())
+
+        bet = user.bettor_bet(bet_size)
+        if not bet:
+            continue
+
+        #Running the actual game once bet size is given
+        spin = wheel.spin_wheel()
+        wheel.formatting_output(spin)
+        results.check_winner(bet, spin)
+
+        #If no numbers left
+        if not wheel.wheel:
+            print("No more numbers left on the wheel!")
+            break
+
+        #Prompting to see if they want to keep playing
+        print("\nDo you want to continue playing? (Y/N): ")
+        dec = input().strip().lower()
+
+        #Making sure decision is valid
+        while dec not in ['y', 'n']:
+            print('Invalid input. Please Enter Y for Yes or N for No')
+            dec = input().strip().lower()
+
+        #If user dosen't want to play anymore
+        if dec != 'y':
+            if results.total > 0:
+                print(f"\nThank you for playing! Your final total is ${results.total:.2f}")
+                print('\nPlease proceed to the chip booth to collect your winnings! We hope to see you again soon!')
+            else:
+                print(f"\nThank you for playing! Your final total is ${results.total:.2f}")
+                print('\nBetter Luck Next Time! We hope to see you again soon!')
+            break
+
+#Displaying the Leaderboard at the end
+results.display_leaderboard()
